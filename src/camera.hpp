@@ -10,12 +10,15 @@ public:
 
     void zoom(float amount);
     void rotateDirection(float amount, bool axis); // 2D rotation
+    void setIsometric();
+    void translate(glm::vec3 offset);
 
-    glm::mat4 getPartRotationMatrix();
+    glm::mat4 getPartMatrix();
     glm::mat4 getViewProjectionMatrix();
 
 private:
-    float rho, phi, theta;
+    float _rho, _phi, _theta, _zoom_val;
+    glm::vec3 _camera_pos, _lookat;
 };
 /*
 class RegularCamera

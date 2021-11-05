@@ -171,21 +171,21 @@ int main()
             if (crop_x)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount X", &crop_x_amount, -50.0f, 50.0f);
+                ImGui::SliderFloat("Amount X", &crop_x_amount, 0.0f, 50.0f);
             }
 
             ImGui::Checkbox("Crop Y", &crop_y);
             if (crop_y)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount Y", &crop_y_amount, -50.0f, 50.0f);
+                ImGui::SliderFloat("Amount Y", &crop_y_amount, 0.0f, 50.0f);
             }
 
             ImGui::Checkbox("Crop Z", &crop_z);
             if (crop_z)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount Z", &crop_z_amount, -50.0f, 50.0f);
+                ImGui::SliderFloat("Amount Z", &crop_z_amount, 0.0f, 50.0f);
             }
 
            // Setting all cutoffs
@@ -197,6 +197,12 @@ int main()
             }
 
             if (ImGui::Button("Open File")) show_open_file_window = true;
+
+            if (ImGui::Button("Isometric"))
+            {
+                view_cam.setIsometric();
+            }
+
             ImGui::End();
         }
 
@@ -232,58 +238,27 @@ int main()
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
             << " ns" << std::endl;
         }
-        show_open_file_window = false;
 
-        // Related to part
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(ox, oy, oz));
-        //model = glm::rotate(model, part_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-        //model = glm::rotate(model, part_pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+        show_open_file_window = false;
 
         // Render part.
         if (a_part_view != NULL)
         {
-         a_part_view->setModelMat(view_cam.getPartRotationMatrix());
-         a_part_view->setViewProjectionMat(viewProjection);
-         a_part_view->should_rotate = rotate_grid;
+            a_part_view->setModelMat(view_cam.getPartMatrix());
+            a_part_view->setViewProjectionMat(viewProjection);
+            a_part_view->should_rotate = rotate_grid;
+            a_part_view->render();
+        }
 
-         a_part_view->render();
-     }
+        ImGui::Render();
 
-    // Render all reference grids. TODO: use only one object
-     if (show_reference_grid[0])
-     {
-        main_ref_grid_0.setModelMat(model);
-        main_ref_grid_0.setViewProjectionMat(viewProjection);
-        main_ref_grid_0.render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
-
-    // Render all reference grids. TODO: use only one object
-    if (show_reference_grid[1])
-    {
-        main_ref_grid_1.setModelMat(model);
-        main_ref_grid_1.setViewProjectionMat(viewProjection);
-        main_ref_grid_1.render();
-    }
-
-    // Render all reference grids. TODO: use only one object
-    if (show_reference_grid[2])
-    {
-        main_ref_grid_2.setModelMat(model);
-        main_ref_grid_2.setViewProjectionMat(viewProjection);
-        main_ref_grid_2.render();
-    }
-
-    ImGui::Render();
-    //ref_arrows.render();
-
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-}
 
     // Terminating.
-    // Free a_part_view
+    
     if (a_part_view != NULL) delete a_part_view;
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -311,7 +286,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #define ANGLE_SPEED 0.06
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    const float sensitivity = 0.05f;
+    const float rot_sensitivity = 0.005f;
+    const float tran_sensitivity = 0.1f;
+
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
     lastX = xpos;
@@ -319,44 +296,18 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     if (imgui_cap_mouse) return;
 
-    xoffset *= sensitivity;
-    yoffset *= sensitivity;
-
-    // Translation.
+    // Rotation.
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
     {
-        view_cam.rotateDirection(xoffset, false); // 2D rotation
-        view_cam.rotateDirection(yoffset, true); // 2D rotation
+        view_cam.rotateDirection(xoffset * rot_sensitivity, false); // 2D rotation
+        view_cam.rotateDirection(yoffset * rot_sensitivity, true); // 2D rotation
     }
 
-    /*
-    // Rotation.
+    // Translation.
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS)
     {
-        yaw   -= xoffset;
-        pitch -= yoffset;
-
-        glm::vec3 direction;
-        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        direction.y = sin(glm::radians(pitch));
-        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(direction);
-    }*/
-
-    // Rotation.
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS)
-    {
-        part_yaw   -= xoffset * 0.2;
-        part_pitch += yoffset * 0.2;
-
-        //printf("New pitch/yaw on part: %f %f\n", part_pitch, part_yaw);
-        //glm::vec3 direction;
-        //direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        //direction.y = sin(glm::radians(pitch));
-        //direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        //cameraFront = glm::normalize(direction);
+        view_cam.translate(glm::vec3(-xoffset, -yoffset, 0.0));
     }
-
 }
 
 void processInput(GLFWwindow *window)
@@ -368,47 +319,39 @@ void processInput(GLFWwindow *window)
     else if(glfwGetKey(window, GLFW_KEY_F2))
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    /*
-    const float cameraSpeed = 0.05f; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    */
-
     else if(glfwGetKey(window, GLFW_KEY_A))
     {
         has_moved = true;
+        view_cam.translate(glm::vec3(MOVE_SPEED, 0.0, 0.0));
         ox -= MOVE_SPEED;
     }
     else if(glfwGetKey(window, GLFW_KEY_W))
     {
         has_moved = true;
+        view_cam.translate(glm::vec3(0.0, -MOVE_SPEED, 0.0));
         oy += MOVE_SPEED;
     }
     else if(glfwGetKey(window, GLFW_KEY_S))
     {
         has_moved = true;
+        view_cam.translate(glm::vec3(0.0, MOVE_SPEED, 0.0));
         oy -= MOVE_SPEED;
     }
     else if(glfwGetKey(window, GLFW_KEY_D))
     {
         has_moved = true;
+        view_cam.translate(glm::vec3(-MOVE_SPEED, 0.0, 0.0));
         ox += MOVE_SPEED;
     }
     else if(glfwGetKey(window, GLFW_KEY_Q))
     {
         has_moved = true;
-        oz += MOVE_SPEED;
+        view_cam.zoom(1.0f);
     }
     else if(glfwGetKey(window, GLFW_KEY_E))
     {
         has_moved = true;
-        oz -= MOVE_SPEED;
+        view_cam.zoom(-1.0f);
     }
     else if(glfwGetKey(window, GLFW_KEY_Z))
     {
@@ -419,12 +362,6 @@ void processInput(GLFWwindow *window)
     {
         has_moved = true;
         rotation_angle -= ANGLE_SPEED;
-    }
-    else if(glfwGetKey(window, GLFW_KEY_G))
-    {
-        orthogonal_change = true;
-        if (orthogonal == true) orthogonal = false;
-        else if (orthogonal == false) orthogonal = true;
     }
 }
 #undef MOVE_SPEED

@@ -14,15 +14,13 @@ Camera::Camera():
     _phi(glm::radians(45.0f)),
     _theta(glm::radians(270.0f)),
     _zoom_val(2.0f),
-    _camera_pos(glm::vec3(0.0,-42.426407,42.426407))
-{
-
-}
+    _camera_pos(glm::vec3(0.0,-10.0,0.0))
+{}
 
 void Camera::setIsometric()
 {
-    _theta = M_PI / 6.0f;
-    _phi = M_PI / 4.0f;
+    _theta = -1.0f * M_PI / 4.0f;
+    _phi = M_PI / 6.0f;
 }
 
 void Camera::zoom(float amount)
@@ -59,8 +57,8 @@ glm::mat4 Camera::getPartMatrix()
     // Just compute the negative rotation wrt the part
     glm::mat4 rot(1.0), scale(1.0);
 
-    rot = glm::rotate(rot, _theta, glm::vec3(0.0f, 0.0f, 1.0f));
-    //rot = glm::rotate(rot, -1.0f * _phi, glm::vec3(0.0f, 1.0f, 0.0f));
+    rot = glm::rotate(rot, _phi, glm::vec3(1.0f, 0.0f, 0.0f));
+    rot = glm::rotate(rot, -1.0f * _theta, glm::vec3(0.0f, 0.0f, 1.0f));
 
     // We also need to scale our part
     scale = glm::scale(scale, glm::vec3(_zoom_val, _zoom_val, _zoom_val));
@@ -87,7 +85,6 @@ glm::mat4 Camera::getViewProjectionMatrix()
     //projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.1f, 1000.0f);
     //glm::mat4 projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.0f);
     projection = glm::ortho(-(float)SCREEN_WIDTH/2.0f, (float)SCREEN_WIDTH/2.0f, -(float)SCREEN_HEIGHT/2.0f, (float)SCREEN_HEIGHT/2.0f, -1000.0f, 1000.0f);
-
 
     return projection * view;
 }

@@ -19,6 +19,7 @@ public:
 private:
     float _rho, _phi, _theta, _zoom_val;
     glm::vec3 _camera_pos, _lookat;
+    glm::mat4 _part_matrix;
 };
 /*
 class RegularCamera

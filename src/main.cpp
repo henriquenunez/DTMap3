@@ -258,7 +258,6 @@ int main()
     }
 
     // Terminating.
-    
     if (a_part_view != NULL) delete a_part_view;
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -306,7 +305,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     // Translation.
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS)
     {
-        view_cam.translate(glm::vec3(-xoffset, -yoffset, 0.0));
+        view_cam.translate(glm::vec3(-xoffset, 0.0, -yoffset));
     }
 }
 

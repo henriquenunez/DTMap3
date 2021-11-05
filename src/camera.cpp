@@ -35,18 +35,35 @@ void Camera::rotateDirection(float amount, bool axis)
     }
 }
 
+glm::mat4 Camera::getPartRotationMatrix()
+{
+    // Just compute the negative rotation wrt the part
+    glm::mat4 ret(1.0);
+
+    ret = glm::rotate(ret, -1.0f * theta, glm::vec3(0.0f, 0.0f, 1.0f));
+    ret = glm::rotate(ret, -1.0f * phi, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    return ret;
+}
+
 glm::mat4 Camera::getViewProjectionMatrix()
 {
     // First, find the camera position
-    float cam_x, cam_y, cam_z;
-    cam_x = rho * cos(theta) * sin(phi);
-    cam_y = rho * sin(theta) * sin(phi);
-    cam_z = rho * cos(phi);
-    glm::vec3 cameraPos = glm::vec3(cam_x, cam_y, cam_z);
+    //float cam_x, cam_y, cam_z;
+    //cam_x = rho * cos(theta) * sin(phi);
+    //cam_y = rho * sin(theta) * sin(phi);
+    //cam_z = rho * cos(phi);
+    //glm::vec3 cameraPos = glm::vec3(cam_x, cam_y, cam_z);
+    
+    glm::mat4 view (1.0f), projection (1.0f);
 
-    glm::mat4 view = glm::lookAt(cameraPos, glm::vec3(0,0,0), glm::vec3(0,0,1));
-    //glm::mat4 projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.1f, 1000.0f);
-    glm::mat4 projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+    //printf("cameraPos: %f %f %f\n", cam_x, cam_y, cam_z);
+    //view = glm::lookAt(cameraPos, glm::vec3(0,0,0), glm::vec3(0,0,1));
+
+    // Testing with a fixed camera atm
+    view = glm::lookAt(glm::vec3(0.000001,-42.426407,42.426407), glm::vec3(0,0,0), glm::vec3(0,0,1));
+    projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.1f, 1000.0f);
+    //glm::mat4 projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
     return projection * view;
 }

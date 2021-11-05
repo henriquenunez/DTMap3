@@ -211,7 +211,8 @@ public:
         ////view = glm::translate(view, _offset);
         //projection = projection_matrix;
 
-        model = glm::translate(glm::mat4(1.0), centroid * -1.0f);
+        // Rotate after translating part
+        model = model * glm::translate(glm::mat4(1.0), centroid * -1.0f);
 
         //Uniforms from matrices.
         unsigned int    model_loc = glGetUniformLocation(_shader_program_id, "model"),

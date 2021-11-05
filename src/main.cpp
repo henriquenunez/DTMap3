@@ -27,7 +27,6 @@
 
 #include "shader.c"
 #include "camera.cpp"
-#include "glad.c"
 
 #include <iostream>
 #include <chrono>
@@ -244,7 +243,7 @@ int main()
         // Render part.
         if (a_part_view != NULL)
         {
-         //a_part_view->setModelMat(model);
+         a_part_view->setModelMat(view_cam.getPartRotationMatrix());
          a_part_view->setViewProjectionMat(viewProjection);
          a_part_view->should_rotate = rotate_grid;
 

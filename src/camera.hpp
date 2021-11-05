@@ -11,6 +11,7 @@ public:
     void zoom(float amount);
     void rotateDirection(float amount, bool axis); // 2D rotation
 
+    glm::mat4 getPartRotationMatrix();
     glm::mat4 getViewProjectionMatrix();
 
 private:

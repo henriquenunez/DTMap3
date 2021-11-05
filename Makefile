@@ -21,10 +21,12 @@ LDFLAGS += -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -L${GL_LIBS_DIR}
 SOURCES = glad.c $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 
-all: build_dir imgui_addons
+OBJECTS = imgui_impl_glfw.o
+
+all: build_dir ${OBJECTS}
 	${CXX} main.cpp ${SOURCES} ${CXXFLAGS} ${BUILD_DIR}/*.o -o ${BUILD_DIR}/main ${LDFLAGS}
 
-${BUILD}%.o: ext/imgui/backends/*.cpp
+${BUILD}%.o: ext/imgui/backends/%.cpp
 	${CXX} -c $< ${CXXFLAGS} -o $@ ${LDFLAGS}
 
 ${BUILD}%.o: ext/imgui/%.cpp
@@ -35,7 +37,6 @@ ${BUILD}%.o: ext/ImGui-Addons/FileBrowser/%.cpp
 
 build_dir:
 	mkdir ${BUILD_DIR} || true
-
 
 run:
 	${BUILD_DIR}/main

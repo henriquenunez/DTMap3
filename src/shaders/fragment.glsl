@@ -15,8 +15,8 @@ uniform bool should_cut_z;
 
 void main()
 {
-    if ((!should_cut_x || (voxelOrig.x < cutoff_x)) &&
-        (!should_cut_y || (voxelOrig.y < cutoff_y)) &&
+    if ((!should_cut_x || (voxelOrig.x > cutoff_x)) &&
+        (!should_cut_y || (voxelOrig.y > cutoff_y)) &&
         (!should_cut_z || (voxelOrig.z < cutoff_z)))
     {
         FragColor = vec4(colorInfo.x, colorInfo.y, colorInfo.z, 1.0f);

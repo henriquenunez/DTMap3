@@ -10,11 +10,17 @@ public:
 
     void zoom(float amount);
     void rotateDirection(float amount, bool axis); // 2D rotation
-    void setIsometric();
     void translate(glm::vec3 offset);
 
     glm::mat4 getPartMatrix();
     glm::mat4 getViewProjectionMatrix();
+
+    void setIsometric();
+    void setTopView();
+    void setSideView();
+    void setFrontView();
+
+    void reCenter();
 
 private:
     float _rho, _phi, _theta, _zoom_val;

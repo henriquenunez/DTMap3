@@ -18,7 +18,6 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "stb_image.h"
 
-// My stuff
 #include "shader.h"
 #include "grid.hpp"
 #include "part.hpp"
@@ -51,18 +50,17 @@ float part_pitch = 0.0f, part_yaw = 0.0f;
 
 float fov = 20.0f;
 
+//reference_arrows_t ref_arrows;
+
+// DTMap parameter variables
+float colormap_h_min, colormap_h_max;
 bool crop_x, crop_y, crop_z;
 float crop_x_amount, crop_y_amount, crop_z_amount;
+float crop_x_min, crop_x_max;
+#define MAX_COL_SIZE 128
+char h_col_name[MAX_COL_SIZE];
 
 bool imgui_cap_mouse; //Gambeta básica
-
-//#include "reference_arrows.h"
-/*
-class HeatMapViewer
-{
-
-}
-*/
 
 Camera view_cam;
 
@@ -109,6 +107,7 @@ int main()
     //So triagles do not overlap improperly.
 
     glEnable(GL_DEPTH_TEST);
+    glfwSwapInterval(1);
     /***************  END GL INITIALIZATION  *************/
 
     //Setting up imgui
@@ -131,12 +130,11 @@ int main()
     // Imgui file browser.
     imgui_addons::ImGuiFileBrowser file_dialog;
     PartRepresentation *a_part_view = NULL;
+    //Colorbar *part_colorbar = NULL;
 
     ReferenceGrid main_ref_grid_0(0);
     ReferenceGrid main_ref_grid_1(1);
     ReferenceGrid main_ref_grid_2(2);
-
-    //reference_arrows_t ref_arrows;
 
     int a = 0;
     //EVENT LOOP
@@ -148,7 +146,6 @@ int main()
 
         //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // GUI
@@ -162,33 +159,37 @@ int main()
             ImGui::Begin("HeatMAP3D Menu");
 
             ImGui::Checkbox("Rotate Grid", &rotate_grid);
-            
+
             ImGui::Checkbox("Reference Grid X", &show_reference_grid[0]);
             ImGui::Checkbox("Reference Grid Y", &show_reference_grid[1]);
             ImGui::Checkbox("Reference Grid Z", &show_reference_grid[2]);
 
-            ImGui::Checkbox("Crop X", &crop_x);
+            ImGui::Checkbox("X cropping", &crop_x);
             if (crop_x)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount X", &crop_x_amount, 0.0f, 50.0f);
+                ImGui::SliderFloat("> X", &crop_x_amount, 0.0f, 50.0f);
             }
 
-            ImGui::Checkbox("Crop Y", &crop_y);
+            ImGui::Checkbox("Y cropping", &crop_y);
             if (crop_y)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount Y", &crop_y_amount, 0.0f, 50.0f);
+                ImGui::SliderFloat("> Y", &crop_y_amount, 0.0f, 50.0f);
             }
 
-            ImGui::Checkbox("Crop Z", &crop_z);
+            ImGui::Checkbox("Z cropping", &crop_z);
             if (crop_z)
             {
                 ImGui::SameLine();
-                ImGui::SliderFloat("Amount Z", &crop_z_amount, 0.0f, 50.0f);
+                ImGui::SliderFloat("> Z", &crop_z_amount, 0.0f, 50.0f);
             }
 
-           // Setting all cutoffs
+	    ImGui::InputText("H column", h_col_name, IM_ARRAYSIZE(h_col_name));
+	    ImGui::InputFloat("Min H", &colormap_h_min, 1.0f, 100.0f, "%.2f");
+            ImGui::InputFloat("Max H", &colormap_h_max, 1.0f, 100.0f, "%.2f");
+
+	    // Setting all cutoffs
             if (a_part_view != NULL)
             {
                 a_part_view->set_crop_x(crop_x, crop_x_amount);
@@ -198,10 +199,15 @@ int main()
 
             if (ImGui::Button("Open File")) show_open_file_window = true;
 
-            if (ImGui::Button("Isometric"))
-            {
-                view_cam.setIsometric();
-            }
+	    // Views
+	    if (ImGui::Button("Isometric view")) view_cam.setIsometric();
+            ImGui::SameLine();
+            if (ImGui::Button("Top view")) view_cam.setTopView();
+            ImGui::SameLine();
+            if (ImGui::Button("Side view")) view_cam.setSideView();
+            ImGui::SameLine();
+            if (ImGui::Button("Front view")) view_cam.setFrontView();
+            //if (ImGui::Button("Re center position")) view_cam.reCenter();
 
             ImGui::End();
         }
@@ -225,13 +231,17 @@ int main()
             auto start = std::chrono::steady_clock::now();
 
             // Import part data here.
-            PartDataCSVImporter a_importer(file_dialog.selected_path, 1, "SpotArea");
-            PartData a_part = a_importer.imported_part_data;//generate_a_part();
+	    try {
+		PartDataCSVImporter a_importer(file_dialog.selected_path, 1, h_col_name, colormap_h_min, colormap_h_max);
 
-            if (a_part_view != NULL) delete a_part_view;
-            a_part_view = new PartRepresentation(a_part);
-            a_part.dealloc();
+	    	PartData a_part = a_importer.imported_part_data; //generate_a_part();
 
+            	if (a_part_view != NULL) delete a_part_view;
+            	a_part_view = new PartRepresentation(a_part);
+            	a_part.dealloc();
+	    } catch (...) {
+		ImGui::OpenPopup("ImportError");
+	    }
             auto end = std::chrono::steady_clock::now();
 
             std::cout << "Elapsed time in nanoseconds : "
@@ -240,6 +250,13 @@ int main()
         }
 
         show_open_file_window = false;
+
+	if (ImGui::BeginPopupModal("ImportError", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+	    ImGui::Text("Error during import. Check if the CSV format and if it contains the columns.");
+	    if (ImGui::Button("Ok")) ImGui::CloseCurrentPopup();
+	    ImGui::EndPopup();
+	}
 
         // Render part.
         if (a_part_view != NULL)
@@ -365,3 +382,4 @@ void processInput(GLFWwindow *window)
 }
 #undef MOVE_SPEED
 #undef ANGLE_SPEED
+

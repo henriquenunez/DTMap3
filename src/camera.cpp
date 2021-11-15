@@ -23,6 +23,24 @@ void Camera::setIsometric()
     _phi = M_PI / 6.0f;
 }
 
+void Camera::setTopView()
+{
+    _theta = 0.0f;
+    _phi = M_PI / 2.0f;
+}
+
+void Camera::setSideView()
+{
+    _theta = M_PI / 2.0f;
+    _phi = 0.0f;
+}
+
+void Camera::setFrontView()
+{
+    _theta = 0.0f;
+    _phi = 0.0f;
+}
+
 void Camera::zoom(float amount)
 {
     _rho -= amount;
@@ -41,7 +59,7 @@ void Camera::rotateDirection(float amount, bool axis)
     }
     else
     {
-        if(_phi+amount >= 0 && _phi+amount <= M_PI)
+        if(_phi+amount >= -M_PI && _phi+amount <= M_PI)
             _phi += amount;
     }
 }
@@ -50,6 +68,12 @@ void Camera::translate(glm::vec3 offset)
 {
     _camera_pos += offset;
     _lookat += offset;
+}
+
+void Camera::reCenter()
+{
+    _camera_pos = glm::vec3(0.0f);
+    _lookat = glm::vec3(0.0f);
 }
 
 glm::mat4 Camera::getPartMatrix()

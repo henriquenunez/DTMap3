@@ -1,5 +1,6 @@
+// ref_grid_vertex.glsl
+
 #version 330 core
-//Vertex shader
 
 layout (location = 0) in vec3 aPos;
 //layout (location = 1) in vec3 inColorInfo;

@@ -144,10 +144,14 @@ glm::vec3 coolwarm_colormap(float min, float max, float val)
 // Implements the HSV colormap
 glm::vec3 hsv_colormap(float min, float max, float val)
 {
+    if (val < min) val = min;
+    if (val > max) val = max;
+
     return hsv2rgb(glm::vec3(
-        340 * ((val - min) / (max - min)),
+        315 * ((val - min) / (max - min)),
         1.0f,
         1.0f));
 }
 
 #endif
+

@@ -41,6 +41,17 @@ void Camera::setFrontView()
     _phi = 0.0f;
 }
 
+void Camera::setDefault()
+{
+    //[Camera] rho: -35.000000 theta: -0.785398 phi: 0.523599
+    //[Camera] pos: (15.000000, -4.000000, 0.000000) lookat: (15.000000, 6.000000, 0.000000)
+    _rho = -35.0f;
+    setIsometric();
+
+    _camera_pos = glm::vec3(15.000000, -4.000000, 0.000000);;
+    _lookat = glm::vec3(15.000000, 6.000000, 0.000000);
+}
+
 void Camera::zoom(float amount)
 {
     _rho -= amount;
@@ -98,13 +109,11 @@ glm::mat4 Camera::getViewProjectionMatrix()
     //cam_y = _rho * sin(_theta) * sin(_phi);
     //cam_z = _rho * cos(_phi);
     //glm::vec3 cameraPos = glm::vec3(cam_x, cam_y, cam_z);
-    
+
     glm::mat4 view (1.0f), projection (1.0f);
 
-    //printf("cameraPos: %f %f %f\n", cam_x, cam_y, cam_z);
     //view = glm::lookAt(cameraPos, glm::vec3(0,0,0), glm::vec3(0,0,1));
 
-    // Testing with a fixed camera atm 
     view = glm::lookAt(_camera_pos, _lookat, glm::vec3(0,0,1));
     //projection = glm::perspective(glm::radians(50.0f), 1.0f, 0.1f, 1000.0f);
     //glm::mat4 projection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.0f);
@@ -112,3 +121,16 @@ glm::mat4 Camera::getViewProjectionMatrix()
 
     return projection * view;
 }
+
+void Camera::printInfo()
+{
+    printf("[Camera] rho: %f theta: %f phi: %f\n", _rho, _theta, _phi);
+    printf("[Camera] pos: (%f, %f, %f) lookat: (%f, %f, %f)\n",
+	    _camera_pos.x,
+	    _camera_pos.y,
+	    _camera_pos.z,
+	    _lookat.x,
+	    _lookat.y,
+	    _lookat.z);
+}
+

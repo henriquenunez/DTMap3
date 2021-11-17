@@ -184,20 +184,22 @@ public:
             //center_x += (float)disc_x;
             //center_y += (float)disc_y;
             //center_z += (float)disc_z;
+	    if (H > 0.001) // Just an epsilon
+	    {
 
-            if (!temp_voxel->valid)
-            {
-                temp_voxel->valid = true;
-                temp_voxel->origin = glm::vec3(disc_x, disc_y, disc_z);
-            }
-
-            // Calculating average on voxel and adding a value.
-            float value_until_now = (float)temp_voxel->value_count * temp_voxel->value;
-
-            temp_voxel->value_count++;
-            temp_voxel->value = (value_until_now + H)/(float)temp_voxel->value_count;
-            temp_voxel->color = hsv_colormap(min_h_param, max_h_param, temp_voxel->value);
- 
+                if (!temp_voxel->valid)
+                {
+                    temp_voxel->valid = true;
+                    temp_voxel->origin = glm::vec3(disc_x, disc_y, disc_z);
+                }
+    
+                // Calculating average on voxel and adding a value.
+                float value_until_now = (float)temp_voxel->value_count * temp_voxel->value;
+    
+                temp_voxel->value_count++;
+                temp_voxel->value = (value_until_now + H)/(float)temp_voxel->value_count;
+                temp_voxel->color = hsv_colormap(min_h_param, max_h_param, temp_voxel->value);
+	    }
             //voxel_n++;
     	}
 

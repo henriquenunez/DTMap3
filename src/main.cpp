@@ -15,8 +15,8 @@
 
 #include <cmath>
 
-//#define STB_IMAGE_IMPLEMENTATION
-//#include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #include "shader.h"
 #include "grid.hpp"
@@ -48,7 +48,11 @@ float lastX = 400, lastY = 300;
 float pitch = 0.0f, yaw = 0.0f;
 float part_pitch = 0.0f, part_yaw = 0.0f;
 
+bool taking_screenshot;
+
 float fov = 20.0f;
+
+std::string curr_filename;
 
 //reference_arrows_t ref_arrows;
 
@@ -64,6 +68,24 @@ bool imgui_cap_mouse; //Gambeta básica
 
 Camera view_cam;
 
+void save_framebuffer()
+{
+    void* data = malloc(3 * SCREEN_WIDTH * SCREEN_HEIGHT);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadBuffer(GL_BACK_LEFT);
+    glReadPixels(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    if (curr_filename.size() == 0) return;
+    curr_filename += ".png";
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png(curr_filename.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 3, data, 3*SCREEN_WIDTH);
+
+    taking_screenshot = false;
+
+    free(data);
+}
+
 int main()
 {
     /******************* GL INITIALIZATION  **************/
@@ -74,7 +96,7 @@ int main()
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     //WINDOW CREATION
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "HeatMAP3D", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "DTMap3D", NULL, NULL);
 
     if (window == NULL)
     {
@@ -82,7 +104,7 @@ int main()
         glfwTerminate();
         return -1;
     }
-    
+
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -148,11 +170,21 @@ int main()
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Visualization
+        if (a_part_view != NULL)
+        {
+            a_part_view->setModelMat(view_cam.getPartMatrix());
+            a_part_view->setViewProjectionMat(viewProjection);
+            a_part_view->should_rotate = rotate_grid;
+            a_part_view->render();
+        }
+
         // GUI
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+	if (!taking_screenshot)
         {
             static int counter = 0;
 
@@ -207,10 +239,15 @@ int main()
             if (ImGui::Button("Side view")) view_cam.setSideView();
             ImGui::SameLine();
             if (ImGui::Button("Front view")) view_cam.setFrontView();
-            //if (ImGui::Button("Re center position")) view_cam.reCenter();
+            if (ImGui::Button("Default view")) view_cam.setDefault();
+
+            if (ImGui::Button("Screenshot")) taking_screenshot = true;
+            ImGui::SameLine();
+            if (ImGui::Button("Cam info")) view_cam.printInfo();
 
             ImGui::End();
         }
+	else save_framebuffer();
 
         imgui_cap_mouse = io.WantCaptureMouse ? true : false;
 
@@ -229,6 +266,8 @@ int main()
 
             // Actual part importer.
             auto start = std::chrono::steady_clock::now();
+
+	    curr_filename = std::string(file_dialog.selected_path);
 
             // Import part data here.
 	    try {
@@ -258,16 +297,7 @@ int main()
 	    ImGui::EndPopup();
 	}
 
-        // Render part.
-        if (a_part_view != NULL)
-        {
-            a_part_view->setModelMat(view_cam.getPartMatrix());
-            a_part_view->setViewProjectionMat(viewProjection);
-            a_part_view->should_rotate = rotate_grid;
-            a_part_view->render();
-        }
-
-        ImGui::Render();
+	ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);

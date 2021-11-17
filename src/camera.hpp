@@ -19,8 +19,10 @@ public:
     void setTopView();
     void setSideView();
     void setFrontView();
+    void setDefault();
 
     void reCenter();
+    void printInfo();
 
 private:
     float _rho, _phi, _theta, _zoom_val;

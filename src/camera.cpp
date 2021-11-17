@@ -45,11 +45,14 @@ void Camera::setDefault()
 {
     //[Camera] rho: -35.000000 theta: -0.785398 phi: 0.523599
     //[Camera] pos: (15.000000, -4.000000, 0.000000) lookat: (15.000000, 6.000000, 0.000000)
+    //[Camera] rho: -35.000000 theta: -0.785398 phi: 0.523599, zoom: 19.500000
+    //[Camera] pos: (14.000000, -4.000000, 48.000000) lookat: (14.000000, 6.000000, 48.000000)
     _rho = -35.0f;
     setIsometric();
 
-    _camera_pos = glm::vec3(15.000000, -4.000000, 0.000000);;
-    _lookat = glm::vec3(15.000000, 6.000000, 0.000000);
+    _zoom_val = 19.5;
+    _camera_pos = glm::vec3(15.000000, -4.000000, 48.000000);;
+    _lookat = glm::vec3(15.000000, 6.000000, 48.000000);
 }
 
 void Camera::zoom(float amount)
@@ -124,7 +127,7 @@ glm::mat4 Camera::getViewProjectionMatrix()
 
 void Camera::printInfo()
 {
-    printf("[Camera] rho: %f theta: %f phi: %f\n", _rho, _theta, _phi);
+    printf("[Camera] rho: %f theta: %f phi: %f, zoom: %f\n", _rho, _theta, _phi, _zoom_val);
     printf("[Camera] pos: (%f, %f, %f) lookat: (%f, %f, %f)\n",
 	    _camera_pos.x,
 	    _camera_pos.y,

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <cstdio>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -14,6 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <cmath>
+#include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -52,7 +54,14 @@ bool taking_screenshot;
 
 float fov = 20.0f;
 
-std::string curr_filename;
+std::string save_filename;
+
+// For automatic mode
+char* arg_filename;
+char* arg_col_name;
+float arg_min_param, arg_max_param;
+int arg_screenshot_mode;
+bool auto_screenshot;
 
 //reference_arrows_t ref_arrows;
 
@@ -76,17 +85,29 @@ void save_framebuffer()
     glReadBuffer(GL_BACK_LEFT);
     glReadPixels(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-    if (curr_filename.size() == 0) return;
-    curr_filename += ".png";
+    if (save_filename.size() == 0) return;
     stbi_flip_vertically_on_write(true);
-    stbi_write_png(curr_filename.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 3, data, 3*SCREEN_WIDTH);
+    stbi_write_png(save_filename.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 3, data, 3*SCREEN_WIDTH);
 
     taking_screenshot = false;
 
     free(data);
 }
 
-int main()
+PartRepresentation *a_part_view = NULL;
+
+void loadPart(const char* filename)
+{
+    PartDataCSVImporter a_importer(filename, 1, h_col_name, colormap_h_min, colormap_h_max);
+
+    PartData a_part = a_importer.imported_part_data; //generate_a_part();
+
+    if (a_part_view != NULL) delete a_part_view;
+    a_part_view = new PartRepresentation(a_part);
+    a_part.dealloc();
+}
+
+int main(int argc, char* argv[])
 {
     /******************* GL INITIALIZATION  **************/
     glfwInit();
@@ -151,24 +172,60 @@ int main()
 
     // Imgui file browser.
     imgui_addons::ImGuiFileBrowser file_dialog;
-    PartRepresentation *a_part_view = NULL;
     //Colorbar *part_colorbar = NULL;
 
     ReferenceGrid main_ref_grid_0(0);
     ReferenceGrid main_ref_grid_1(1);
     ReferenceGrid main_ref_grid_2(2);
 
+    // Auto version
+    if (argc >= 2)
+    {
+	sscanf(argv[3], "%f", &arg_min_param);
+	sscanf(argv[4], "%f", &arg_max_param);
+	sscanf(argv[5], "%d", &arg_screenshot_mode);
+
+	printf("Screenshot mode: %d\n", arg_screenshot_mode);
+
+	arg_filename = argv[1];
+	arg_col_name = argv[2];
+
+	strncpy(h_col_name, arg_col_name, 128);
+	colormap_h_min = arg_min_param;
+	colormap_h_max = arg_max_param;
+	auto_screenshot = true;
+	save_filename = std::string(argv[6]);
+    }
+
+    // No need for UI control.
+    if (arg_screenshot_mode)
+    {
+        loadPart(arg_filename);
+        taking_screenshot = true;
+
+        view_cam.setDefault();
+
+        if (arg_screenshot_mode == 2) // Setup crop Y
+        {
+	   view_cam.setFrontView();
+    	   crop_y = true;
+    	   crop_y_amount = 9.75;
+        }
+    }
+
+    // Actual part importer.
+    auto start = std::chrono::steady_clock::now();
+
     int a = 0;
     //EVENT LOOP
     while(!glfwWindowShouldClose(window))
     {
-        glm::mat4 viewProjection = view_cam.getViewProjectionMatrix();
-
         processInput(window);
 
         //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 viewProjection = view_cam.getViewProjectionMatrix();
 
 	// Visualization
         if (a_part_view != NULL)
@@ -176,7 +233,9 @@ int main()
             a_part_view->setModelMat(view_cam.getPartMatrix());
             a_part_view->setViewProjectionMat(viewProjection);
             a_part_view->should_rotate = rotate_grid;
-            a_part_view->render();
+
+	    a_part_view->set_crop_y(crop_y, crop_y_amount);
+	    a_part_view->render();
         }
 
         // GUI
@@ -247,9 +306,8 @@ int main()
 
             ImGui::End();
         }
-	else save_framebuffer();
 
-        imgui_cap_mouse = io.WantCaptureMouse ? true : false;
+	imgui_cap_mouse = io.WantCaptureMouse ? true : false;
 
         if (show_open_file_window)
         {
@@ -267,17 +325,12 @@ int main()
             // Actual part importer.
             auto start = std::chrono::steady_clock::now();
 
-	    curr_filename = std::string(file_dialog.selected_path);
+	    save_filename = std::string(file_dialog.selected_path);
+	    save_filename += ".png";
 
-            // Import part data here.
+	    // Import part data here.
 	    try {
-		PartDataCSVImporter a_importer(file_dialog.selected_path, 1, h_col_name, colormap_h_min, colormap_h_max);
-
-	    	PartData a_part = a_importer.imported_part_data; //generate_a_part();
-
-            	if (a_part_view != NULL) delete a_part_view;
-            	a_part_view = new PartRepresentation(a_part);
-            	a_part.dealloc();
+		loadPart(file_dialog.selected_path.c_str());
 	    } catch (...) {
 		ImGui::OpenPopup("ImportError");
 	    }
@@ -300,7 +353,18 @@ int main()
 	ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
+
+    	auto now = std::chrono::steady_clock::now();
+	int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+
+	if (taking_screenshot && elapsed > 10)
+	{
+	    printf("taking screenshot!\n");
+	    save_framebuffer();
+	    if (auto_screenshot) break;
+	}
+
+	glfwSwapBuffers(window);
         glfwPollEvents();
     }
 

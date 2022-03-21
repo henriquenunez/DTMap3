@@ -1,8 +1,9 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-int SCREEN_WIDTH  = 800;
-int SCREEN_HEIGHT = 600;
-bool viewport_changed = false;
+#define BIG_FLOAT 100000.0f
+#define SMALL_FLOAT -100000.0f
+
+#define per(a, b) (((float)a/(float)b)) ///((float)b)
 
 #endif

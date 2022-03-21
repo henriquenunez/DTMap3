@@ -1,13 +1,15 @@
 #ifndef PART_DATA_H
 #define PART_DATA_H
 
+#include "defines.h"
 #include "colors.hpp"
+#include "voxel.h"
 #include <csv.hpp>
 
-// Defines the representation of a Voxel, of a part, and implmements
+// Defines the representation of a Voxel, of a part, and implements
 // a CSV importer.
 
-glm::vec3 color_map(glm::vec3 color_input)
+inline glm::vec3 color_map(glm::vec3 color_input)
 {
     glm::vec3 ret;
     ret.x = color_input.x;
@@ -17,205 +19,60 @@ glm::vec3 color_map(glm::vec3 color_input)
     return ret;
 }
 
-#define per(a, b) (((float)a/(float)b)) ///((float)b)
-
-typedef struct
-{
-    glm::vec3 origin;
-    bool valid;
-    glm::vec3 color;
-    float value;
-    int value_count;
-    //glm::vec3 size; for now will let size constant
-} Voxel;
-
-typedef std::vector<Voxel> vox_arr_t;
-typedef std::vector<vox_arr_t> vox_2d_mat_t;
-typedef std::vector<vox_2d_mat_t> vox_3d_mat_t;
-
 struct PartData
 {
     Voxel *data;
-    int size;
 
     // For now, we're dealing with a 1mm resolution in all axes, so the
     // beginning in each direction is easy.
+    glm::vec3 size; // Stores the number of elements in each direction.
+    glm::vec3 resolution; // The resolution of the voxels in this part.
+
     float start_x, start_y, start_z; // Spatial position
     glm::vec3 centroid;
 
     void alloc()
     {
-	data = (Voxel*) calloc(size * size * size, sizeof(Voxel));
-	#ifdef DEBUG
-	    printf("PartData data ptr: %p", data);
-	#endif
+    	data = (Voxel*) calloc(size.x * size.y * size.z, sizeof(Voxel));
+	    #ifdef DEBUG
+	        printf("PartData data ptr: %p\n", data);
+	    #endif
     }
 
     void dealloc()
     {
-	free(data);
+	    free(data);
+    }
+
+    inline glm::vec3 origin_of_voxel(float x, float y, float z)
+    {
+        return { (float)((int)(x / resolution.x)) * resolution.x,
+                 (float)((int)(y / resolution.y)) * resolution.y,
+                 (float)((int)(z / resolution.z)) * resolution.z
+                };
+    }
+
+    Voxel* voxel_at_coord(float x, float y, float z)
+    {
+        // Find which index it belongs to
+        // Expects it to be 0 referenced.
+        int i = x / resolution.x;
+        int j = y / resolution.y;
+        int k = z / resolution.z;
+
+#ifdef DEBUG
+        printf("Coord (%f %f %f) -> (%d %d %d)\n", x, y, z, i, j, k);
+#endif
+
+        return voxel_at(i, j, k);
     }
 
     Voxel* voxel_at(int i, int j, int k)
     {
-        return data +  (i * size * size +
-                        j * size +
-                        k);
+        return data + (int) (i * size.z * size.y +
+                             j * size.z +
+                             k);
     }
-};
-
-class PartDataCSVImporter
-{
-public:
-    PartDataCSVImporter(std::string filename, float resolution, std::string column_h, float min_h_param = 0.0f, float max_h_param = 0.0f)
-    {
-    	csv::CSVReader csv_reader(filename);
-    	csv::CSVReader csv_reader2(filename);
-
-    	#define BIG_FLOAT 100000.0f
-    	#define SMALL_FLOAT -100000.0f
-
-        // To compute the centroids
-        float center_x, center_y, center_z;
-        center_x = center_y = center_z = 0.0f;
-
-        //int voxel_n;
-
-    	//Header is like this one.
-    	//,X,Y,Z,Time,Feed,ID,LaserPower,SpotArea
-
-    	float X, Y, Z, H;
-    	
-    	float MaxH = 0, MinH = BIG_FLOAT;
-
-    	float min_x = BIG_FLOAT, min_y = BIG_FLOAT, min_z = BIG_FLOAT;
-    	float max_x = SMALL_FLOAT, max_y = SMALL_FLOAT, max_z = SMALL_FLOAT;
-
-    	for(auto &row : csv_reader)
-    	{
-    	    // Get one line of the file.
-    	    X = row["X"].get<float>();
-    	    Y = row["Y"].get<float>();
-    	    Z = row["Z"].get<float>();
-    	    //Feed = row["Feed"].get<int>();
-    	    //LaserPower = row["LaserPower"].get<int>();
-    	    H = row[column_h].get<float>();
-
-    	    // Updating extents
-    	    if (X > max_x) max_x = X;
-    	    if (X < min_x) min_x = X;
-
-    	    if (Y > max_y) max_y = Y;
-    	    if (Y < min_y) min_y = Y;
-    	    
-    	    if (Z > max_z) max_z = Z;
-            if (Z < min_z) min_z = Z;
-
-            if (H > MaxH) MaxH = H;
-    	    if (H < MinH) MinH = H;
-    	    
-            //if (Feed > MaxFeed) MaxFeed = Feed;
-    	    //if (LaserPower > MaxLaserPower) MaxLaserPower = LaserPower;
-    	}
-
-    	// Now that you know the extents, allocate space for it.
-    	imported_part_data.size =
-    	    (int)((max_x - min_x) > (max_y - min_y) ?
-    		((max_x - min_x) > (max_z - min_z) ?
-    		    (max_x - min_x) :
-    		    (max_z - min_z) ) :
-    		((max_y - min_y) > (max_z - min_z) ?
-    		    (max_y - min_y) :
-    		    (max_z - min_z))) + 1;
-
-        #ifdef DEBUG
-    	   printf("Part size: %d\n", imported_part_data.size);
-        #endif
-
-    	// Imported_part_data
-    	//imported_part_data.start_x = min_x;
-    	//imported_part_data.start_y = min_y;
-    	//imported_part_data.start_z = min_z;
-
-    	imported_part_data.start_x = 0;
-    	imported_part_data.start_y = 0;
-    	imported_part_data.start_z = 0;
-
-    	// Now, actually process the data.
-
-    	Voxel* temp_voxel;
-    	imported_part_data.alloc();
-
-	if (min_h_param < 0.001f && max_h_param < 0.001f)
-	{
-	    min_h_param = MinH;
-	    max_h_param = MaxH;
-	}
-
-    	for (auto row = csv_reader2.begin(); row != csv_reader2.end(); ++row)
-    	{
-    	    // Get one line of the file.
-    	    X = (*row)["X"].get<float>();
-    	    Y = (*row)["Y"].get<float>();
-    	    Z = (*row)["Z"].get<float>();
-
-            // Discretized values.
-            int disc_x = (int)(X-min_x);
-            int disc_y = (int)(Y-min_y);
-            int disc_z = (int)(Z-min_z);
-
-    	    //Feed = (*row)["Feed"].get<int>();
-    	    //LaserPower = (*row)["LaserPower"].get<int>();
-    	    H = (*row)[column_h].get<float>();
-
-    	    // Insert into corresponding voxel.
-    	    temp_voxel = imported_part_data.voxel_at(disc_x, disc_y, disc_z);
-
-            /*
-        	#ifdef DEBUG
-        	    printf("Adding information on vox (%d,%d,%d)\n",
-        		    (int)(X-min_x),
-        		    (int)(Y-min_y),
-                	    (int)(Z-min_z));
-
-        	#endif
-        	*/
-
-            //center_x += (float)disc_x;
-            //center_y += (float)disc_y;
-            //center_z += (float)disc_z;
-	    if (H > 0.001) // Just an epsilon
-	    {
-
-                if (!temp_voxel->valid)
-                {
-                    temp_voxel->valid = true;
-                    temp_voxel->origin = glm::vec3(disc_x, disc_y, disc_z);
-                }
-    
-                // Calculating average on voxel and adding a value.
-                float value_until_now = (float)temp_voxel->value_count * temp_voxel->value;
-    
-                temp_voxel->value_count++;
-                temp_voxel->value = (value_until_now + H)/(float)temp_voxel->value_count;
-                temp_voxel->color = hsv_colormap(min_h_param, max_h_param, temp_voxel->value);
-	    }
-            //voxel_n++;
-    	}
-
-        //center_x /= (float) voxel_n;
-        //center_y /= (float) voxel_n;
-        //center_z /= (float) voxel_n;
-
-        // imported_part_data.centroid = glm::vec3(center_x, center_y, center_z);
-
-        printf("MinH: %f %f\n", MinH, MaxH);
-    }
-
-    PartData imported_part_data;
-
-    ~PartDataCSVImporter()
-    {}
 };
 
 typedef enum
@@ -230,10 +87,10 @@ typedef enum
 
 #define PART_SIZE 600
 
-PartData generate_a_part()
+inline PartData generate_a_part()
 {
     PartData ret_part_data;
-    ret_part_data.size = PART_SIZE;
+    ret_part_data.size = glm::vec3(PART_SIZE);
     ret_part_data.data = (Voxel*) malloc(sizeof(Voxel) * PART_SIZE * PART_SIZE * PART_SIZE);
     printf("Data is: %p\n", ret_part_data.data);
 

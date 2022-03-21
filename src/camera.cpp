@@ -4,7 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/geometric.hpp>
 
+#include "globals.h"
 #include "defines.h"
+
 #include <stdio.h>
 #include <iostream>
 

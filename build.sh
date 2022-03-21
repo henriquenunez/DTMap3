@@ -4,7 +4,7 @@ SRC=$(pwd)/src
 BUILD=$(pwd)/build/
 
 CXXFLAGS="-O0 -g --std=c++17 -DDEBUG "
-LDFLAGS="-fsanitize=address "
+LDFLAGS="-fsanitize=address -fno-omit-frame-pointer "
 
 EXT="$(pwd)/ext"
 
@@ -33,18 +33,22 @@ SOURCES+="$IMGUI_DIR/*.cpp "
 SOURCES+="$IMGUI_DIR/backends/imgui_impl_glfw.cpp "
 SOURCES+="$IMGUI_DIR/backends/imgui_impl_opengl3.cpp "
 SOURCES+="$IMGUI_ADDONS_DIR/*.cpp "
+SOURCES+="$SRC/importer.cpp "
 
 MAIN="$(pwd)/src/main.cpp"
 
-mkdir $BUILD
+if [ ! -d $BUILD ]
+then
+  mkdir $BUILD;
+fi
+
 cd $BUILD
 
 # Build libs
-$CXX -c $SOURCES $CXXFLAGS
+$CXX $CXXFLAGS -c $SOURCES
 
 # Copy shaders
 cp -r ${SRC}/shaders .
 
 # Build main source
 $CXX $MAIN *.o $CXXFLAGS -I$EXT -o heatmap $LDFLAGS
-

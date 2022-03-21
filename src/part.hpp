@@ -6,6 +6,8 @@
 #include "defines.h"
 #include "part_data.hpp"
 
+// this renders the actual part TODO refactor to "renderer" or something
+
 /*
 Quick note:
 
@@ -78,11 +80,12 @@ public:
 
         #define size part_data.size
 
-        for (int i = 0; i < size; ++i)
-            for (int j = 0; j < size; ++j)
-                for (int k = 0; k < size; ++k)
+        for (int i = 0; i < size.x; ++i)
+            for (int j = 0; j < size.y; ++j)
+                for (int k = 0; k < size.z; ++k)
                 {
-                    //printf("Iteration no. (%d,%d,%d). Voxel is %s\n", i, j, k, part_data.voxel_at(i, j, k)->valid ? "Valid" : "Invalid");
+                    //printf("Iteration no. (%d,%d,%d).\n", i, j, k);
+                    //printf("Voxel is %s\n", part_data.voxel_at(i, j, k)->valid ? "Valid" : "Invalid");
                     if (part_data.voxel_at(i, j, k)->valid)
                     {
                         center_x += (float)i;
@@ -90,9 +93,9 @@ public:
                         center_z += (float)k;
                         voxel_n++;
 
-            		    //#ifdef DEBUG
-            			//printf("Voxel (%d,%d,%d) is valid.\n", i, j, k);
-            		    //#endif
+            		    #ifdef DEBUG
+            			printf("Voxel (%d,%d,%d) is valid.\n", i, j, k);
+            		    #endif
                         //For every 6 faces, check if there's the need of adding it to the whole model.
                         //we check !valid, since we need to see if the adjacent voxel won't be shown
 
@@ -102,65 +105,65 @@ public:
                             first_triangle_param  = a_tr;
                             second_triangle_param = b_tr;
 
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
 
                         //Front
                         //if (k == (size-1) || (k < size - 1 && !part_data.voxel_at(i, j, k+1)->valid))
                         {
                             first_triangle_param  = k_tr;
-                            second_triangle_param = l_tr;    
+                            second_triangle_param = l_tr;
 
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
 
                         //Down
                         //if (j==0 || (j > 0 && !part_data.voxel_at(i, j-1, k)->valid))
                         {
                             first_triangle_param  = g_tr;
-                            second_triangle_param = h_tr; 
+                            second_triangle_param = h_tr;
 
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
 
                         //Up
                         //if (j == size -1 || (j < size - 1 && !part_data.voxel_at(i, j+1, k)->valid))
                         {
                             first_triangle_param  = i_tr;
-                            second_triangle_param = j_tr; 
+                            second_triangle_param = j_tr;
 
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
 
                         //Left
                         //if (i == 0 || (i > 0 && !part_data.voxel_at(i-1, j, k)->valid))
                         {
                             first_triangle_param  = c_tr;
-                            second_triangle_param = d_tr; 
+                            second_triangle_param = d_tr;
 
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
 
                         //Right
                         //if (i == (size-1) || (i < size - 1 && !part_data.voxel_at(i+1, j, k)->valid))
                         {
                             first_triangle_param  = e_tr;
-                            second_triangle_param = f_tr; 
+                            second_triangle_param = f_tr;
 
                             //TODO: change this bizarre thing.
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
-                        addFaceTriangleToMesh(vertex_buf, 1.0, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
-                        _triangle_count += 2;
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k),  first_triangle_param); //First  face
+                            addFaceTriangleToMesh(vertex_buf, part_data.resolution, part_data.voxel_at(i, j, k), second_triangle_param); //Second face
+                            _triangle_count += 2;
                         }
                     }
                 }
@@ -303,9 +306,8 @@ private:
 
     size_t _triangle_count;
 
-    //TODO: change this constant resolution to another thing.
     //Adding one of the square's face triangles to the mesh.
-    void addFaceTriangleToMesh(std::vector<float> &buf, float resolution, Voxel *voxel, rel_triangle_t cube_face_triangle)
+    void addFaceTriangleToMesh(std::vector<float> &buf, glm::vec3 resolution, Voxel *voxel, rel_triangle_t cube_face_triangle)
     {
         //We are going to add 3 vertices here.
         float x, y, z;
@@ -319,12 +321,12 @@ private:
         y = voxel->origin.y;
         z = voxel->origin.z + 1.0; //TODO: I BEG YOU, FIX THIS.
 
-        if (Rx & op) x += resolution;
-        if (Ry & op) y += resolution;
-        if (Rz & op) z -= resolution; // THIS IS BECAUSE OF MY MISTAKE IN THE RIGHT HAND RULE.
+        if (Rx & op) x += resolution.x;
+        if (Ry & op) y += resolution.y;
+        if (Rz & op) z -= resolution.z; // THIS IS BECAUSE OF MY MISTAKE IN THE RIGHT HAND RULE.
         buf.push_back(x); buf.push_back(y); buf.push_back(z);
         buf.push_back(color_info.x); buf.push_back(color_info.y); buf.push_back(color_info.z);
-        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y);  buf.push_back(voxel->origin.z); 
+        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y); buf.push_back(voxel->origin.z);
 
         //V1
         op = cube_face_triangle.v1;
@@ -333,12 +335,12 @@ private:
         y = voxel->origin.y;
         z = voxel->origin.z + 1.0; //TODO: I BEG YOU, FIX THIS.
 
-        if (Rx & op) x += resolution;
-        if (Ry & op) y += resolution;
-        if (Rz & op) z -= resolution;
+        if (Rx & op) x += resolution.x;
+        if (Ry & op) y += resolution.y;
+        if (Rz & op) z -= resolution.z;
         buf.push_back(x); buf.push_back(y); buf.push_back(z);
         buf.push_back(color_info.x); buf.push_back(color_info.y); buf.push_back(color_info.z);
-        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y);  buf.push_back(voxel->origin.z); 
+        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y); buf.push_back(voxel->origin.z);
 
         //V2
         op = cube_face_triangle.v2;
@@ -347,12 +349,12 @@ private:
         y = voxel->origin.y;
         z = voxel->origin.z + 1.0; //TODO: I BEG YOU, FIX THIS.
 
-        if (Rx & op) x += resolution;
-        if (Ry & op) y += resolution;
-        if (Rz & op) z -= resolution;
+        if (Rx & op) x += resolution.x;
+        if (Ry & op) y += resolution.y;
+        if (Rz & op) z -= resolution.z;
         buf.push_back(x); buf.push_back(y); buf.push_back(z);
         buf.push_back(color_info.x); buf.push_back(color_info.y); buf.push_back(color_info.z);
-        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y);  buf.push_back(voxel->origin.z); 
+        buf.push_back(voxel->origin.x); buf.push_back(voxel->origin.y); buf.push_back(voxel->origin.z);
     }
 
     void initGL(const std::vector<float> &vtx_buf)

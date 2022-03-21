@@ -3,7 +3,9 @@
 #ifndef COLORS_H
 #define COLORS_H
 
-glm::vec3 hsv2rgb(glm::vec3 in)
+#include <glm/glm.hpp>
+
+inline glm::vec3 hsv2rgb(glm::vec3 in)
 {
     double      hh, p, q, t, ff;
     long        i;
@@ -61,7 +63,7 @@ glm::vec3 hsv2rgb(glm::vec3 in)
     return out;     
 }
 
-glm::vec3 hsv_to_rgb(glm::vec3 hsv)
+inline glm::vec3 hsv_to_rgb(glm::vec3 hsv)
 {
     float h = hsv.x;
     float s = hsv.y;
@@ -85,7 +87,7 @@ glm::vec3 hsv_to_rgb(glm::vec3 hsv)
 }
 
 // Implements the Blue-White-Red colormap
-glm::vec3 bwr_colormap(float min, float max, float val)
+inline glm::vec3 bwr_colormap(float min, float max, float val)
 {
     float mid = (max + min) / 2.0f;
     float r, g, b;
@@ -112,7 +114,7 @@ glm::vec3 bwr_colormap(float min, float max, float val)
 }
 
 // Implements the Cool-Warm colormap
-glm::vec3 coolwarm_colormap(float min, float max, float val)
+inline glm::vec3 coolwarm_colormap(float min, float max, float val)
 {
     glm::vec3 col_max(188, 32, 44);
     glm::vec3 col_mid(216, 219, 224);
@@ -142,7 +144,7 @@ glm::vec3 coolwarm_colormap(float min, float max, float val)
 }
 
 // Implements the HSV colormap
-glm::vec3 hsv_colormap(float min, float max, float val)
+inline glm::vec3 hsv_colormap(float min, float max, float val)
 {
     if (val < min) val = min;
     if (val > max) val = max;

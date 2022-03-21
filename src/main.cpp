@@ -18,6 +18,7 @@
 #include <string>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include "stb_image_write.h"
 
 #include "shader.h"
@@ -25,6 +26,8 @@
 #include "part.hpp"
 #include "part_data.hpp"
 #include "camera.hpp"
+#include "importer.h"
+#include "globals.h"
 
 #include "shader.c"
 #include "camera.cpp"
@@ -35,11 +38,14 @@
 #include "defines.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-float ox=0.0f, oy=0.0f, oz=-20.0f;
+void processInput(GLFWwindow *window);
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+
+float ox = 0.0f, oy = 0.0f, oz = -20.0f;
 bool has_moved = false;
 bool orthogonal = false;
 bool orthogonal_change = false;
@@ -57,8 +63,8 @@ float fov = 20.0f;
 std::string save_filename;
 
 // For automatic mode
-char* arg_filename;
-char* arg_col_name;
+char *arg_filename;
+char *arg_col_name;
 float arg_min_param, arg_max_param;
 int arg_screenshot_mode;
 bool auto_screenshot;
@@ -73,13 +79,16 @@ float crop_x_min, crop_x_max;
 #define MAX_COL_SIZE 128
 char h_col_name[MAX_COL_SIZE];
 
+// Resolution
+float resolution_x, resolution_y, resolution_z;
+
 bool imgui_cap_mouse; //Gambeta básica
 
 Camera view_cam;
 
 void save_framebuffer()
 {
-    void* data = malloc(3 * SCREEN_WIDTH * SCREEN_HEIGHT);
+    void *data = malloc(3 * SCREEN_WIDTH * SCREEN_HEIGHT);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadBuffer(GL_BACK_LEFT);
@@ -87,7 +96,7 @@ void save_framebuffer()
 
     if (save_filename.size() == 0) return;
     stbi_flip_vertically_on_write(true);
-    stbi_write_png(save_filename.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 3, data, 3*SCREEN_WIDTH);
+    stbi_write_png(save_filename.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 3, data, 3 * SCREEN_WIDTH);
 
     taking_screenshot = false;
 
@@ -96,9 +105,9 @@ void save_framebuffer()
 
 PartRepresentation *a_part_view = NULL;
 
-void loadPart(const char* filename)
+void loadPart(const char *filename)
 {
-    PartDataCSVImporter a_importer(filename, 1, h_col_name, colormap_h_min, colormap_h_max);
+    PartDataCSVImporter a_importer(filename, glm::vec3(resolution_x, resolution_y, resolution_z), h_col_name, colormap_h_min, colormap_h_max);
 
     PartData a_part = a_importer.imported_part_data; //generate_a_part();
 
@@ -107,7 +116,7 @@ void loadPart(const char* filename)
     a_part.dealloc();
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     /******************* GL INITIALIZATION  **************/
     glfwInit();
@@ -117,7 +126,7 @@ int main(int argc, char* argv[])
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     //WINDOW CREATION
-    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "DTMap3D", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "DTMap3D", NULL, NULL);
 
     if (window == NULL)
     {
@@ -128,7 +137,7 @@ int main(int argc, char* argv[])
 
     glfwMakeContextCurrent(window);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
@@ -142,8 +151,8 @@ int main(int argc, char* argv[])
     glfwSetScrollCallback(window, scroll_callback);
     glfwSwapInterval(0);
 
-    const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
-    const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
+    const GLubyte *vendor = glGetString(GL_VENDOR); // Returns the vendor
+    const GLubyte *renderer = glGetString(GL_RENDERER); // Returns a hint to the model
 
     printf("%s\n", vendor);
     printf("%s\n", renderer);
@@ -156,7 +165,8 @@ int main(int argc, char* argv[])
     //Setting up imgui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO &io = ImGui::GetIO();
+    (void) io;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
@@ -168,7 +178,7 @@ int main(int argc, char* argv[])
 
     ImVec4 clear_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    std::vector<ImVec4> color_pallete;
+    std::vector <ImVec4> color_pallete;
 
     // Imgui file browser.
     imgui_addons::ImGuiFileBrowser file_dialog;
@@ -181,20 +191,20 @@ int main(int argc, char* argv[])
     // Auto version
     if (argc >= 2)
     {
-	sscanf(argv[3], "%f", &arg_min_param);
-	sscanf(argv[4], "%f", &arg_max_param);
-	sscanf(argv[5], "%d", &arg_screenshot_mode);
+        sscanf(argv[3], "%f", &arg_min_param);
+        sscanf(argv[4], "%f", &arg_max_param);
+        sscanf(argv[5], "%d", &arg_screenshot_mode);
 
-	printf("Screenshot mode: %d\n", arg_screenshot_mode);
+        printf("Screenshot mode: %d\n", arg_screenshot_mode);
 
-	arg_filename = argv[1];
-	arg_col_name = argv[2];
+        arg_filename = argv[1];
+        arg_col_name = argv[2];
 
-	strncpy(h_col_name, arg_col_name, 128);
-	colormap_h_min = arg_min_param;
-	colormap_h_max = arg_max_param;
-	auto_screenshot = true;
-	save_filename = std::string(argv[6]);
+        strncpy(h_col_name, arg_col_name, 128);
+        colormap_h_min = arg_min_param;
+        colormap_h_max = arg_max_param;
+        auto_screenshot = true;
+        save_filename = std::string(argv[6]);
     }
 
     // No need for UI control.
@@ -207,9 +217,9 @@ int main(int argc, char* argv[])
 
         if (arg_screenshot_mode == 2) // Setup crop Y
         {
-	   view_cam.setFrontView();
-    	   crop_y = true;
-    	   crop_y_amount = 9.75;
+            view_cam.setFrontView();
+            crop_y = true;
+            crop_y_amount = 9.75;
         }
     }
 
@@ -218,7 +228,7 @@ int main(int argc, char* argv[])
 
     int a = 0;
     //EVENT LOOP
-    while(!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window))
     {
         processInput(window);
 
@@ -227,15 +237,15 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glm::mat4 viewProjection = view_cam.getViewProjectionMatrix();
 
-	// Visualization
+        // Visualization
         if (a_part_view != NULL)
         {
             a_part_view->setModelMat(view_cam.getPartMatrix());
             a_part_view->setViewProjectionMat(viewProjection);
             a_part_view->should_rotate = rotate_grid;
 
-	    a_part_view->set_crop_y(crop_y, crop_y_amount);
-	    a_part_view->render();
+            a_part_view->set_crop_y(crop_y, crop_y_amount);
+            a_part_view->render();
         }
 
         // GUI
@@ -243,7 +253,7 @@ int main(int argc, char* argv[])
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-	if (!taking_screenshot)
+        if (!taking_screenshot)
         {
             static int counter = 0;
 
@@ -276,11 +286,15 @@ int main(int argc, char* argv[])
                 ImGui::SliderFloat("> Z", &crop_z_amount, 0.0f, 50.0f);
             }
 
-	    ImGui::InputText("H column", h_col_name, IM_ARRAYSIZE(h_col_name));
-	    ImGui::InputFloat("Min H", &colormap_h_min, 1.0f, 100.0f, "%.2f");
+            ImGui::InputText("H column", h_col_name, IM_ARRAYSIZE(h_col_name));
+            ImGui::InputFloat("Min H", &colormap_h_min, 1.0f, 100.0f, "%.2f");
             ImGui::InputFloat("Max H", &colormap_h_max, 1.0f, 100.0f, "%.2f");
 
-	    // Setting all cutoffs
+            ImGui::InputFloat("Res X", &resolution_x, 0.1f, 10.0f, "%.2f");
+            ImGui::InputFloat("Res Y", &resolution_y, 0.1f, 10.0f, "%.2f");
+            ImGui::InputFloat("Res Z", &resolution_z, 0.1f, 10.0f, "%.2f");
+
+            // Setting all cutoffs
             if (a_part_view != NULL)
             {
                 a_part_view->set_crop_x(crop_x, crop_x_amount);
@@ -290,8 +304,8 @@ int main(int argc, char* argv[])
 
             if (ImGui::Button("Open File")) show_open_file_window = true;
 
-	    // Views
-	    if (ImGui::Button("Isometric view")) view_cam.setIsometric();
+            // Views
+            if (ImGui::Button("Isometric view")) view_cam.setIsometric();
             ImGui::SameLine();
             if (ImGui::Button("Top view")) view_cam.setTopView();
             ImGui::SameLine();
@@ -307,14 +321,15 @@ int main(int argc, char* argv[])
             ImGui::End();
         }
 
-	imgui_cap_mouse = io.WantCaptureMouse ? true : false;
+        imgui_cap_mouse = io.WantCaptureMouse ? true : false;
 
         if (show_open_file_window)
         {
             ImGui::OpenPopup("Open File");
         }
 
-        if(file_dialog.showFileDialog("Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(700, 310), ".csv"))
+        if (file_dialog.showFileDialog("Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(700, 310),
+                                       ".csv"))
         {
             ox = oy = 0.0f;
             oz = -100.0f;
@@ -325,46 +340,49 @@ int main(int argc, char* argv[])
             // Actual part importer.
             auto start = std::chrono::steady_clock::now();
 
-	    save_filename = std::string(file_dialog.selected_path);
-	    save_filename += ".png";
+            save_filename = std::string(file_dialog.selected_path);
+            save_filename += ".png";
 
-	    // Import part data here.
-	    try {
-		loadPart(file_dialog.selected_path.c_str());
-	    } catch (...) {
-		ImGui::OpenPopup("ImportError");
-	    }
+            // Import part data here.
+            try
+            {
+                loadPart(file_dialog.selected_path.c_str());
+            } catch (...)
+            {
+                ImGui::OpenPopup("ImportError");
+            }
             auto end = std::chrono::steady_clock::now();
 
             std::cout << "Elapsed time in nanoseconds : "
-            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
-            << " ns" << std::endl;
+                      << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()
+                      << " ns" << std::endl;
         }
 
         show_open_file_window = false;
 
-	if (ImGui::BeginPopupModal("ImportError", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-	    ImGui::Text("Error during import. Check if the CSV format and if it contains the columns.");
-	    if (ImGui::Button("Ok")) ImGui::CloseCurrentPopup();
-	    ImGui::EndPopup();
-	}
+        if (ImGui::BeginPopupModal("ImportError", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("Error during import. Check if the CSV format and if it contains the columns.");
+            if (ImGui::Button("Ok"))
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+        }
 
-	ImGui::Render();
+        ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    	auto now = std::chrono::steady_clock::now();
-	int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+        auto now = std::chrono::steady_clock::now();
+        int elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
 
-	if (taking_screenshot && elapsed > 10)
-	{
-	    printf("taking screenshot!\n");
-	    save_framebuffer();
-	    if (auto_screenshot) break;
-	}
+        if (taking_screenshot && elapsed > 10)
+        {
+            printf("taking screenshot!\n");
+            save_framebuffer();
+            if (auto_screenshot) break;
+        }
 
-	glfwSwapBuffers(window);
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
@@ -380,21 +398,23 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    view_cam.zoom((float)yoffset * 20.0f);
+    view_cam.zoom((float) yoffset * 20.0f);
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     viewport_changed = true;
-    SCREEN_HEIGHT = height; SCREEN_WIDTH = width;
+    SCREEN_HEIGHT = height;
+    SCREEN_WIDTH = width;
     glViewport(0, 0, width, height);
 }
 
 #define MOVE_SPEED 1
 #define ANGLE_SPEED 0.06
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
     const float rot_sensitivity = 0.005f;
     const float tran_sensitivity = 0.1f;
@@ -422,58 +442,58 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void processInput(GLFWwindow *window)
 {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    else if(glfwGetKey(window, GLFW_KEY_F1))
+    else if (glfwGetKey(window, GLFW_KEY_F1))
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    else if(glfwGetKey(window, GLFW_KEY_F2))
+    else if (glfwGetKey(window, GLFW_KEY_F2))
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    else if(glfwGetKey(window, GLFW_KEY_A))
+    else if (glfwGetKey(window, GLFW_KEY_A))
     {
         has_moved = true;
         view_cam.translate(glm::vec3(MOVE_SPEED, 0.0, 0.0));
         ox -= MOVE_SPEED;
     }
-    else if(glfwGetKey(window, GLFW_KEY_W))
+    else if (glfwGetKey(window, GLFW_KEY_W))
     {
         has_moved = true;
         view_cam.translate(glm::vec3(0.0, -MOVE_SPEED, 0.0));
         oy += MOVE_SPEED;
     }
-    else if(glfwGetKey(window, GLFW_KEY_S))
+    else if (glfwGetKey(window, GLFW_KEY_S))
     {
         has_moved = true;
         view_cam.translate(glm::vec3(0.0, MOVE_SPEED, 0.0));
         oy -= MOVE_SPEED;
     }
-    else if(glfwGetKey(window, GLFW_KEY_D))
+    else if (glfwGetKey(window, GLFW_KEY_D))
     {
         has_moved = true;
         view_cam.translate(glm::vec3(-MOVE_SPEED, 0.0, 0.0));
         ox += MOVE_SPEED;
     }
-    else if(glfwGetKey(window, GLFW_KEY_Q))
+    else if (glfwGetKey(window, GLFW_KEY_Q))
     {
         has_moved = true;
         view_cam.zoom(1.0f);
     }
-    else if(glfwGetKey(window, GLFW_KEY_E))
+    else if (glfwGetKey(window, GLFW_KEY_E))
     {
         has_moved = true;
         view_cam.zoom(-1.0f);
     }
-    else if(glfwGetKey(window, GLFW_KEY_Z))
+    else if (glfwGetKey(window, GLFW_KEY_Z))
     {
         has_moved = true;
         rotation_angle += ANGLE_SPEED;
     }
-    else if(glfwGetKey(window, GLFW_KEY_X))
+    else if (glfwGetKey(window, GLFW_KEY_X))
     {
         has_moved = true;
         rotation_angle -= ANGLE_SPEED;
     }
 }
+
 #undef MOVE_SPEED
 #undef ANGLE_SPEED
-

@@ -12,6 +12,8 @@ git clone --depth 1 https://github.com/gallickgunner/ImGui-Addons.git
 # CSV Parser
 wget 'https://raw.githubusercontent.com/vincentlaucsb/csv-parser/master/single_include/csv.hpp'
 
+# stb_image_write
+wget 'https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h'
+
 # Unzipping glad
 unzip glad.zip -d glad
-

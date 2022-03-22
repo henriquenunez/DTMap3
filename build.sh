@@ -1,10 +1,19 @@
-CXX=g++
+
+if [[ $1 = "windows" ]]
+then
+  CXX=x86_64-w64-mingw32-g++
+  LDFLAGS=""
+else
+  CXX=g++
+  LDFLAGS="-fsanitize=address -fno-omit-frame-pointer "
+fi
+
+echo Using $CXX as the C++ compiler.
 
 SRC=$(pwd)/src
 BUILD=$(pwd)/build/
 
 CXXFLAGS="-O0 -g --std=c++17 -DDEBUG "
-LDFLAGS="-fsanitize=address -fno-omit-frame-pointer "
 
 EXT="$(pwd)/ext"
 
@@ -23,8 +32,15 @@ CXXFLAGS+="-I$IMGUI_DIR "
 CXXFLAGS+="-I$EXT/glad/include "
 CXXFLAGS+="-I$EXT -I$IMGUI_ADDONS_DIR -I$IMGUI_DIR/backends -DIMGUI_IMPL_OPENGL_LOADER_GLAD "
 #LDFLAGS+="-lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl -L$GL_LIBS_DIR "
-LDFLAGS+=$(pkg-config --static --libs glfw3)
 
+if [[ $1 = "windows" ]]
+then
+  # Setup the libraries and stuff to search for glfw
+  LDFLAGS+="-L$EXT/glfw-3.3.6.bin.WIN64/lib-static-ucrt $EXT/glfw-3.3.6.bin.WIN64/lib-static-ucrt/glfw3dll.lib  "
+  CXXFLAGS+="-I$EXT/glfw-3.3.6.bin.WIN64/include "
+else
+  LDFLAGS+=$(pkg-config --static --libs glfw3)
+fi
 
 SOURCES="$(pwd)/ext/glad/src/glad.c "
 #SOURCES+="$IMGUI_DIR/imgui.cpp $IMGUI_DIR/imgui_demo.cpp $IMGUI_DIR/imgui_draw.cpp $IMGUI_DIR/imgui_tables.cpp $IMGUI_DIR/imgui_widgets.cpp "
@@ -37,12 +53,12 @@ SOURCES+="$SRC/importer.cpp "
 
 MAIN="$(pwd)/src/main.cpp"
 
-if [ ! -d $BUILD ]
+if [ ! -d "$BUILD" ]
 then
-  mkdir $BUILD;
+  mkdir "$BUILD";
 fi
 
-cd $BUILD
+cd "$BUILD" || exit # In case cd fails
 
 # Build libs
 $CXX $CXXFLAGS -c $SOURCES

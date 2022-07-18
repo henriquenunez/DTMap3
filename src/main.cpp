@@ -125,17 +125,30 @@ int main(int argc, char *argv[])
 {
     /******************* GL INITIALIZATION  **************/
     glfwInit();
+    
+#ifdef __APPLE__
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#else
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
+#endif
+    
     //WINDOW CREATION
     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "DTMap3D", NULL, NULL);
 
     if (window == NULL)
     {
         std::cout << "Failed to initialize GLFW" << std::endl;
+
+        const char* description;
+        int code = glfwGetError(&description);
+         
+        if (description)
+            std::cout << code << ": " << description;
+        
         glfwTerminate();
         return -1;
     }

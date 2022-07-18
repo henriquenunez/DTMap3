@@ -3,6 +3,7 @@
 //
 
 #include "importer.h"
+#include "colormap.h"
 
 #include <glm/glm.hpp>
 
@@ -164,7 +165,7 @@ void PartDataCSVImporter::processCSVData(std::string filename)
 
             temp_voxel->value_count++;
             temp_voxel->value = (value_until_now + H) / (float) temp_voxel->value_count;
-            temp_voxel->color = hsv_colormap(_min_h_param, _max_h_param, temp_voxel->value);
+            temp_voxel->color = viridis_colormap(_min_h_param, _max_h_param, temp_voxel->value);
         }
         //voxel_n++;
     }

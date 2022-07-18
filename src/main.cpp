@@ -25,6 +25,7 @@
 #include "grid.hpp"
 #include "part.hpp"
 #include "part_data.hpp"
+#include "colorbar.hpp"
 #include "camera.hpp"
 #include "importer.h"
 #include "globals.h"
@@ -104,6 +105,7 @@ void save_framebuffer()
 }
 
 PartRepresentation *a_part_view = NULL;
+Colorbar *part_colorbar = NULL;
 
 void loadPart(const char *filename)
 {
@@ -112,7 +114,10 @@ void loadPart(const char *filename)
     PartData a_part = a_importer.imported_part_data; //generate_a_part();
 
     if (a_part_view != NULL) delete a_part_view;
+    if (part_colorbar != NULL) delete part_colorbar;
+
     a_part_view = new PartRepresentation(a_part);
+    part_colorbar = new Colorbar(colormap_h_min, colormap_h_max);
     a_part.dealloc();
 }
 
@@ -182,7 +187,6 @@ int main(int argc, char *argv[])
 
     // Imgui file browser.
     imgui_addons::ImGuiFileBrowser file_dialog;
-    //Colorbar *part_colorbar = NULL;
 
     ReferenceGrid main_ref_grid_0(0);
     ReferenceGrid main_ref_grid_1(1);
@@ -230,6 +234,7 @@ int main(int argc, char *argv[])
     //EVENT LOOP
     while (!glfwWindowShouldClose(window))
     {
+        //std::cout << "yay\n";
         processInput(window);
 
         //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -246,6 +251,11 @@ int main(int argc, char *argv[])
 
             a_part_view->set_crop_y(crop_y, crop_y_amount);
             a_part_view->render();
+        }
+
+        if (part_colorbar)
+        {
+            part_colorbar->render();
         }
 
         // GUI
@@ -497,3 +507,8 @@ void processInput(GLFWwindow *window)
 
 #undef MOVE_SPEED
 #undef ANGLE_SPEED
+
+// unity build
+//#include "importer.cpp"
+//#include "colorbar.cpp"
+

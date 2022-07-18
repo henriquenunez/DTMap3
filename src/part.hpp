@@ -5,6 +5,7 @@
 #include <vector>
 #include "defines.h"
 #include "part_data.hpp"
+#include "colormap.h"
 
 // this renders the actual part TODO refactor to "renderer" or something
 

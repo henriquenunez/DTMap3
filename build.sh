@@ -50,6 +50,7 @@ SOURCES+="$IMGUI_DIR/backends/imgui_impl_glfw.cpp "
 SOURCES+="$IMGUI_DIR/backends/imgui_impl_opengl3.cpp "
 SOURCES+="$IMGUI_ADDONS_DIR/*.cpp "
 SOURCES+="$SRC/importer.cpp "
+SOURCES+="$SRC/colorbar.cpp "
 
 MAIN="$(pwd)/src/main.cpp"
 

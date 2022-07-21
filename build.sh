@@ -43,14 +43,16 @@ else
 fi
 
 SOURCES="$(pwd)/ext/glad/src/glad.c "
+
+# TODO: inject files for unity building
 #SOURCES+="$IMGUI_DIR/imgui.cpp $IMGUI_DIR/imgui_demo.cpp $IMGUI_DIR/imgui_draw.cpp $IMGUI_DIR/imgui_tables.cpp $IMGUI_DIR/imgui_widgets.cpp "
 #SOURCES+="$IMGUI_DIR/backends/imgui_impl_glfw.cpp $IMGUI_DIR/backends/imgui_impl_opengl3.cpp "
-SOURCES+="$IMGUI_DIR/*.cpp "
-SOURCES+="$IMGUI_DIR/backends/imgui_impl_glfw.cpp "
-SOURCES+="$IMGUI_DIR/backends/imgui_impl_opengl3.cpp "
-SOURCES+="$IMGUI_ADDONS_DIR/*.cpp "
-SOURCES+="$SRC/importer.cpp "
-SOURCES+="$SRC/colorbar.cpp "
+#SOURCES+="$IMGUI_DIR/*.cpp "
+#SOURCES+="$IMGUI_DIR/backends/imgui_impl_glfw.cpp "
+#SOURCES+="$IMGUI_DIR/backends/imgui_impl_opengl3.cpp "
+#SOURCES+="$IMGUI_ADDONS_DIR/*.cpp "
+#SOURCES+="$SRC/importer.cpp "
+#SOURCES+="$SRC/colorbar.cpp "
 
 MAIN="$(pwd)/src/main.cpp"
 

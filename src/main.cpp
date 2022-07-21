@@ -346,6 +346,8 @@ int main(int argc, char *argv[])
 
         imgui_cap_mouse = io.WantCaptureMouse ? true : false;
 
+        ImGui::ShowDemoWindow();
+
         if (show_open_file_window)
         {
             ImGui::OpenPopup("Open File");
@@ -522,6 +524,13 @@ void processInput(GLFWwindow *window)
 #undef ANGLE_SPEED
 
 // unity build
-//#include "importer.cpp"
-//#include "colorbar.cpp"
-
+#include "importer.cpp"
+#include "colorbar.cpp"
+#include "../ext/ImGui-Addons/FileBrowser/ImGuiFileBrowser.cpp"
+#include "../ext/imgui/imgui.cpp"
+#include "../ext/imgui/imgui_demo.cpp"
+#include "../ext/imgui/imgui_draw.cpp"
+#include "../ext/imgui/imgui_tables.cpp"
+#include "../ext/imgui/imgui_widgets.cpp"
+#include "../ext/imgui/backends/imgui_impl_glfw.cpp"
+#include "../ext/imgui/backends/imgui_impl_opengl3.cpp"

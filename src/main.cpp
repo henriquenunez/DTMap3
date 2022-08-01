@@ -524,13 +524,18 @@ void processInput(GLFWwindow *window)
 #undef ANGLE_SPEED
 
 // unity build
-#include "importer.cpp"
+
+// TODO: unify build stuff
 #include "colorbar.cpp"
+#include "../ext/imgui/imgui_demo.cpp"
+
+#ifndef __APPLE__ // Xcode handles the building process for us
+#include "importer.cpp"
 #include "../ext/ImGui-Addons/FileBrowser/ImGuiFileBrowser.cpp"
 #include "../ext/imgui/imgui.cpp"
-#include "../ext/imgui/imgui_demo.cpp"
 #include "../ext/imgui/imgui_draw.cpp"
 #include "../ext/imgui/imgui_tables.cpp"
 #include "../ext/imgui/imgui_widgets.cpp"
 #include "../ext/imgui/backends/imgui_impl_glfw.cpp"
 #include "../ext/imgui/backends/imgui_impl_opengl3.cpp"
+#endif

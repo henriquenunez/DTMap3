@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		267579B72891E6CB004B90B8 /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 267579B62891E6B7004B90B8 /* libglfw3.a */; };
+		267579B92891E6CB004B90B8 /* libglfw.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 267579B82891E6CB004B90B8 /* libglfw.3.dylib */; };
+		267579BA2891E6CB004B90B8 /* libglfw.3.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 267579B82891E6CB004B90B8 /* libglfw.3.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		267579BD2891E9B8004B90B8 /* textRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 267579BC2891E9B8004B90B8 /* textRenderer.cpp */; };
+		267579BF28929A38004B90B8 /* stb_truetype.h in Sources */ = {isa = PBXBuildFile; fileRef = 267579BE28929A38004B90B8 /* stb_truetype.h */; };
 		827F20B027FF5954000A43D3 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 827F20AF27FF5954000A43D3 /* main.cpp */; };
 		82D243A5280ABB9400C2B64D /* colors.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 82D24394280ABB9400C2B64D /* colors.hpp */; };
 		82D243A6280ABB9400C2B64D /* colorbar.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 82D24395280ABB9400C2B64D /* colorbar.hpp */; };
@@ -39,10 +44,20 @@
 		82D243D8280AC46600C2B64D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82D243D7280AC46600C2B64D /* CoreGraphics.framework */; };
 		82D243DA280AC48100C2B64D /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82D243D9280AC48100C2B64D /* AppKit.framework */; };
 		82D243DC280AC48C00C2B64D /* AppleScriptObjC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 82D243DB280AC48C00C2B64D /* AppleScriptObjC.framework */; };
-		82D243E0280AC6F900C2B64D /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 82D243CA280AC2D200C2B64D /* libglfw3.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		267579BB2891E6CB004B90B8 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				267579BA2891E6CB004B90B8 /* libglfw.3.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		827F20A127FF57A0000A43D3 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -55,6 +70,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		267579AB2891E617004B90B8 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../ext/glfw-3.3.8.bin.MACOS/lib-arm64/libglfw3.a"; sourceTree = "<group>"; };
+		267579AD2891E62F004B90B8 /* libglfw.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.dylib; path = "../ext/glfw-3.3.8.bin.MACOS/lib-arm64/libglfw.3.dylib"; sourceTree = "<group>"; };
+		267579B12891E654004B90B8 /* glfw-3.3.8.bin.MACOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "glfw-3.3.8.bin.MACOS"; path = "../ext/glfw-3.3.8.bin.MACOS"; sourceTree = "<group>"; };
+		267579B62891E6B7004B90B8 /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../ext/glfw-3.3.8.bin.MACOS/lib-universal/libglfw3.a"; sourceTree = "<group>"; };
+		267579B82891E6CB004B90B8 /* libglfw.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglfw.3.dylib; path = "../ext/glfw-3.3.8.bin.MACOS/lib-universal/libglfw.3.dylib"; sourceTree = "<group>"; };
+		267579BC2891E9B8004B90B8 /* textRenderer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = textRenderer.cpp; path = ../src/textRenderer.cpp; sourceTree = "<group>"; };
+		267579BE28929A38004B90B8 /* stb_truetype.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stb_truetype.h; path = ../ext/stb_truetype.h; sourceTree = "<group>"; };
 		827F20A327FF57A0000A43D3 /* DTMap3-mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "DTMap3-mac"; sourceTree = BUILT_PRODUCTS_DIR; };
 		827F20AD27FF5803000A43D3 /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
 		827F20AE27FF589B000A43D3 /* ext */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ext; path = ../../ext; sourceTree = "<group>"; };
@@ -102,13 +124,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				82D243E0280AC6F900C2B64D /* libglfw3.a in Frameworks */,
 				82D243DC280AC48C00C2B64D /* AppleScriptObjC.framework in Frameworks */,
 				82D243DA280AC48100C2B64D /* AppKit.framework in Frameworks */,
 				82D243D8280AC46600C2B64D /* CoreGraphics.framework in Frameworks */,
+				267579B72891E6CB004B90B8 /* libglfw3.a in Frameworks */,
 				82D243D6280AC43700C2B64D /* IOKit.framework in Frameworks */,
 				82D243D4280AC40400C2B64D /* CoreFoundation.framework in Frameworks */,
 				82D243D1280AC3F500C2B64D /* Foundation.framework in Frameworks */,
+				267579B92891E6CB004B90B8 /* libglfw.3.dylib in Frameworks */,
 				82D243D2280AC3F500C2B64D /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -119,6 +142,8 @@
 		827F209A27FF57A0000A43D3 = {
 			isa = PBXGroup;
 			children = (
+				267579BE28929A38004B90B8 /* stb_truetype.h */,
+				267579BC2891E9B8004B90B8 /* textRenderer.cpp */,
 				82D243BF280AC12400C2B64D /* imgui_draw.cpp */,
 				82D243C0280AC12400C2B64D /* imgui_impl_glfw.cpp */,
 				82D243BE280AC12400C2B64D /* imgui_impl_opengl3.cpp */,
@@ -173,6 +198,11 @@
 		82D243C8280AC2D200C2B64D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				267579B82891E6CB004B90B8 /* libglfw.3.dylib */,
+				267579B62891E6B7004B90B8 /* libglfw3.a */,
+				267579B12891E654004B90B8 /* glfw-3.3.8.bin.MACOS */,
+				267579AD2891E62F004B90B8 /* libglfw.3.dylib */,
+				267579AB2891E617004B90B8 /* libglfw3.a */,
 				82D243DB280AC48C00C2B64D /* AppleScriptObjC.framework */,
 				82D243D9280AC48100C2B64D /* AppKit.framework */,
 				82D243D7280AC46600C2B64D /* CoreGraphics.framework */,
@@ -197,6 +227,7 @@
 				827F20A027FF57A0000A43D3 /* Frameworks */,
 				827F20A127FF57A0000A43D3 /* CopyFiles */,
 				82D243E1280AEFB000C2B64D /* ShellScript */,
+				267579BB2891E6CB004B90B8 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -264,6 +295,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				267579BF28929A38004B90B8 /* stb_truetype.h in Sources */,
+				267579BD2891E9B8004B90B8 /* textRenderer.cpp in Sources */,
 				82D243C3280AC12400C2B64D /* imgui_impl_opengl3.cpp in Sources */,
 				82D243C4280AC12400C2B64D /* imgui_draw.cpp in Sources */,
 				82D243C5280AC12400C2B64D /* imgui_impl_glfw.cpp in Sources */,

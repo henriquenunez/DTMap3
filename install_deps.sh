@@ -24,4 +24,8 @@ if [[ $1 -eq "windows" ]]
 then
   wget 'https://github.com/glfw/glfw/releases/download/3.3.6/glfw-3.3.6.bin.WIN64.zip'
   unzip 'glfw-3.3.6.bin.WIN64.zip'
+elif [[ $1 -eq "mac" ]]
+then
+  wget 'https://github.com/glfw/glfw/releases/download/3.3.8/glfw-3.3.8.bin.MACOS.zip'
+  unzip 'glfw-3.3.8.bin.MACOS.zip'
 fi
